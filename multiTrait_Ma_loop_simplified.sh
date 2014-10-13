@@ -4,7 +4,7 @@
 ##########################################
 ###make matrix for trait with maternal effects
 ##########################################
-array=(bw ww)
+array=(bw ww ss)
 
 for i in "${array[@]}"
 do
@@ -38,7 +38,7 @@ done
 ###make matrix for trait without maternal effects
 ###########################################
 
-array=(fw yw)
+array=(fw yw )
 
 for i in "${array[@]}"
 do
@@ -97,51 +97,52 @@ wait
 ###########################################
 ##construct X'RX; Z'RZ; X'RZ'; Z'RX 
 ###########################################
-array=(X1 X2 X3 X4)
-array=(X1 X2 X3 X4)
-
-cat R12 > R21
+array=(1 2 3 4 5 6 7 8 9 10 11 12)
+array2=(1 2 3 4 5 6 7 8 9 10 11 12)
 
 for i in "${array[@]}"
 do
 for j in "${array2[@]}"
 do
 
+rInvert =$(awk '$1==$i&&$2=$j{print $3}' Rinvert)
 #construct X'RX
-cmult -t -a X$i -R R$i$j -b X$j -c X$i"RX"$j &
+cmult -t -a X$i -R $rInvert -b X$j -c X$i"RX"$j &
 
 #construct Z'RZ
-cmult -t -a Z$i -R R$i$j -b Z$j -c Z$i"RZ"$j &
+cmult -t -a Z$i -R $rInvert -b Z$j -c Z$i"RZ"$j &
 
 #construct X'RZ
-cmult -t -a X$i -R R$i$j -b Z$j -c X$i"RZ"$j &
+cmult -t -a X$i -R $rInvert -b Z$j -c X$i"RZ"$j &
 
 #construct Z'RX
-cmult -t -a Z$i -R R$i$j -b X$j -c Z$i"RX"$j &
+cmult -t -a Z$i -R $rInvert -b X$j -c Z$i"RX"$j &
 
 done
 done
 ###########################################
 ##construct Zm'RZm ; Zp'RZp ; Zm'RZp ; Zp'RZm 
 ###########################################
-array=(1 2)
-array=(1 2)
+array=(1 2 3)
+array2=(1 2 3)
 
 for i in "${array[@]}"
 do
 for j in "${array2[@]}"
 do
+
+rInvert =$(awk '$1==$i&&$2=$j{print $3}' Rinvert)
 #construct Zm'RZm
-cmult -t -a M$i -R R$i$j -b M$j -c M$i"RM"$j &
+cmult -t -a M$i -R rInvert -b M$j -c M$i"RM"$j &
 
 #construct Zp'RZp
-cmult -t -a P$i -R R$i$j -b P$j -c P$i"RP"$j &
+cmult -t -a P$i -R rInvert -b P$j -c P$i"RP"$j &
 
 #construct Zm'RZp
-cmult -t -a M$i -R R$i$j -b P$j -c M$i"RP"$j &
+cmult -t -a M$i -R rInvert -b P$j -c M$i"RP"$j &
 
 #construct Zp'RZm
-cmult -t -a P$i -R R$i$j -b M$j -c P$i"RM"$j &
+cmult -t -a P$i -R rInvert -b M$j -c P$i"RM"$j &
 
 done
 done
@@ -149,36 +150,39 @@ done
 ###########################################
 ##construct X'RZm ; X'RZp; Z'RZm ; Z'RZp  X 2 
 ###########################################
-array=(1 2 3 4)
-array=(1 2)
+array=(1 2 3 4 5 6 7 8 9 10 11 12)
+array2=(1 2 3) 
 
 for i in "${array[@]}"
 do
 for j in "${array2[@]}"
 do
 
+
+rInvert =$(awk '$1==$i&&$2=$j{print $3}' Rinvert)
+
 #construct X'RZm
-cmult -t -a X$i -R R$i$j -b M$j -c X$i"RM"$j &
+cmult -t -a X$i -R rInvert -b M$j -c X$i"RM"$j &
 
 #construct Zm'RX
-cmult -t -a M$j -R R$j$i -b X$i -c M$j"RX"$i &
+cmult -t -a M$j -R rInvert -b X$i -c M$j"RX"$i &
 
 #construct Z'RZm
-cmult -t -a Z$i -R R$i$j -b M$j -c Z$i"RM"$j &
+cmult -t -a Z$i -R rInvert -b M$j -c Z$i"RM"$j &
 
 #construct Zm'RZ
-cmult -t -a M$j -R R$j$i -b Z$i -c M$j"RZ"$i &
+cmult -t -a M$j -R rInvert -b Z$i -c M$j"RZ"$i &
 
 #construct X'RZp
-cmult -t -a X$i -R R$i$j -b P$j -c X$i"RP"$j &
+cmult -t -a X$i -R rInvert -b P$j -c X$i"RP"$j &
 
 #construct Zp'RX
-cmult -t -a P$j -R R$j$i -b X$i -c P$j"RX"$i &
+cmult -t -a P$j -R rInvert -b X$i -c P$j"RX"$i &
 
 #construct Z'RZp
-cmult -t -a Z$i -R R$i$j -b P$j -c Z$i"RP"$j &
+cmult -t -a Z$i -R rInvert -b P$j -c Z$i"RP"$j &
 #construct Zp'RZ
-cmult -t -a P$j -R R$j$i -b Z$i -c P$j"RZ"$i &
+cmult -t -a P$j -R rInvert -b Z$i -c P$j"RZ"$i &
 
 done
 done
@@ -207,35 +211,41 @@ g43=-0.0011
 g44=0.0015
 
 
+array=(1 2 3 4 5 6 7 8 9 10 11 12)
+array2=(1 2 3 4 5 6 7 8 9 10 11 12) 
 
-cadd -a Z$i"RZ"$j -r $g11 Ainverse -c Z$i"RZ"$j".v" &
+for i in "${array[@]}"
+do
+for j in "${array2[@]}"
+do
 
-cadd -a Z1RZ1 -r $g11 -b Ainverse -c Z1RZ1.v &
-cadd -a Z1RZ2 -r $g12 -b Ainverse -c Z1RZ2.v &
-cadd -a Z1RZ3 -r $g13 -b Ainverse -c Z1RZ3.v &
-cadd -a Z1RZ4 -r $g14 -b Ainverse -c Z1RZ4.v &
-cadd -a Z2RZ1 -r $g21 -b Ainverse -c Z2RZ1.v &
-cadd -a Z2RZ2 -r $g22 -b Ainverse -c Z2RZ2.v &
-cadd -a Z2RZ3 -r $g23 -b Ainverse -c Z2RZ3.v &
-cadd -a Z2RZ4 -r $g24 -b Ainverse -c Z2RZ4.v &
-cadd -a Z3RZ1 -r $g31 -b Ainverse -c Z3RZ1.v &
-cadd -a Z3RZ2 -r $g32 -b Ainverse -c Z3RZ2.v &
-cadd -a Z3RZ3 -r $g33 -b Ainverse -c Z3RZ3.v &
-cadd -a Z3RZ4 -r $g34 -b Ainverse -c Z3RZ4.v &
-cadd -a Z4RZ1 -r $g41 -b Ainverse -c Z4RZ1.v &
-cadd -a Z4RZ2 -r $g42 -b Ainverse -c Z4RZ2.v &
-cadd -a Z4RZ3 -r $g43 -b Ainverse -c Z4RZ3.v &
-cadd -a Z4RZ4 -r $g44 -b Ainverse -c Z4RZ4.v &
+gInvert =$(awk '$1==$i&&$2=$j{print $3}' Ginvert)
+
+cadd -a Z$i"RZ"$j -r gInvert Ainverse -c Z$i"RZ"$j".v" &
+
+done
+done
+
 wait
 
 m11=0.2009
 m12=-0.0069
 m21=-0.0069
 m22=0.0031
-cadd -a M1RM1 -r $m11 -b Ainverse -c M1RM1.v &
-cadd -a M1RM2 -r $m12 -b Ainverse -c M1RM2.v &
-cadd -a M2RM1 -r $m21 -b Ainverse -c M2RM1.v &
-cadd -a M2RM2 -r $m22 -b Ainverse -c M2RM2.v &
+
+array=(1 2 3)
+array2=(1 2 3) 
+
+for i in "${array[@]}"
+do
+for j in "${array2[@]}"
+do
+
+mInvert =$(awk '$1==$i&&$2=$j{print $3}' Minvert)
+
+cadd -a M$i"RM"$j -r mInvert -b Ainverse -c M$i"RM"$j".v" &
+done
+done
 wait
 
 
@@ -243,12 +253,23 @@ p11=0.4994
 p12=-0.0092
 p21=-0.0092
 p22=0.0019
+
 indnum=$(awk '$6!="\."{print $6}' phe.bw.fill.ped|sort -u|wc| awk '{print $1}')  
-ident 1611519 > ident.1611519
-cadd -a P1RP1 -r $p11 -b ident.1611519 -c P1RP1.v &
-cadd -a P1RP2 -r $p12 -b ident.1611519 -c P1RP2.v &
-cadd -a P2RP1 -r $p21 -b ident.1611519 -c P2RP1.v &
-cadd -a P2RP2 -r $p22 -b ident.1611519 -c P2RP2.v &
+
+array=(1 2 3)
+array2=(1 2 3) 
+
+for i in "${array[@]}"
+do
+for j in "${array2[@]}"
+do
+
+ident 1611519 > myIdent
+cadd -a P$i"RP"$j -r $p11 -b myIndent -c P$i"RP"$j".v" &
+
+done
+done
+
 wait
 
 ###########################################
@@ -312,12 +333,4 @@ cadd -a rhs.1.10 -b rhs.1.11 -c rhs.$i
 
 done
 
-
-for i in "${array[@]}" #X,Z..
-do
-
-
-cvcat rhs.X1 rhs.X2 rhs.X3 rhs.X4 rhs.Z1 rhs.Z2 rhs.Z3 rhs.Z4 rhs.M1 rhs.M2 rhs.P1 rhs.P2 rhs
-
-#csolve -A lhs.MAP -x solve.Ma,sln -b rhs -h -t 1e-15 > solve.Ma.log
 #pcgmgpu -A lhs -x solve_gpu.sln -b rhs -t 1e-15 > solve_gpu.log
