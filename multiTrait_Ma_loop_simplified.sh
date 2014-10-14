@@ -38,7 +38,7 @@ done
 ###make matrix for trait without maternal effects
 ###########################################
 
-array=(fw yw )
+array=(fw yw carc_ema carc_imf carc_rib cwt ema imf rib)
 
 for i in "${array[@]}"
 do
@@ -56,12 +56,32 @@ wait
 
 done
 
+###########################################
+###make matrix for trait with repeatability
+###########################################
+
+array=(mcw)
+
+for i in "${array[@]}"
+do
+
+#####make X and Z matrix
+awk '{print $2}' phe.$i".fill.ped" > y.$i &
+awk '{print $1}' phe.$i".fill.ped" > id.dat.$i &
+awk '{print $1}' stacked_ped > id.eff &
+awk '{print $4}' phe.$i".fill.ped" > cg1.dat.$i &
+awk '{print $4}' phe.$i".fill.ped" | sort -u > cg1.eff.$i &
+wait
+cgen_z -d cg1.dat.$i -e cg1.eff.$i -r y.$i -o X.$i
+cgen_z -d id.dat.$i -e id.eff -r y.$i -o Z.$i
+wait
+
 
 ###########################################
 ## rename design matrix
 ###########################################
 n=1
-array=(bw ww yw fw)
+array=(bw ww yw fw carc_ema carc_imf carc_rib cwt ema imf rib mcw)
 
 for i in "${array[@]}"
 do
@@ -91,7 +111,7 @@ done
 ###########################################
 ###########################################
 
-cnewr -R R -r resid.4x4 y1 y2 y3 y4
+cnewr -R R -r resid.14x14 y1 y2 y3 y4 y5 y6 y7 y9 y9 y10 y11 y12 y13 y14
 wait
 
 ###########################################
@@ -105,18 +125,21 @@ do
 for j in "${array2[@]}"
 do
 
-rInvert =$(awk '$1==$i&&$2=$j{print $3}' Rinvert)
+if[ $j < $i ]{
+cat R$j$i > R$i$j
+}
+
 #construct X'RX
-cmult -t -a X$i -R $rInvert -b X$j -c X$i"RX"$j &
+cmult -t -a X$i -R R$i$j -b X$j -c X$i"RX"$j &
 
 #construct Z'RZ
-cmult -t -a Z$i -R $rInvert -b Z$j -c Z$i"RZ"$j &
+cmult -t -a Z$i -R R$i$j -b Z$j -c Z$i"RZ"$j &
 
 #construct X'RZ
-cmult -t -a X$i -R $rInvert -b Z$j -c X$i"RZ"$j &
+cmult -t -a X$i -R R$i$j -b Z$j -c X$i"RZ"$j &
 
 #construct Z'RX
-cmult -t -a Z$i -R $rInvert -b X$j -c Z$i"RX"$j &
+cmult -t -a Z$i -R R$i$j -b X$j -c Z$i"RX"$j &
 
 done
 done
@@ -131,18 +154,20 @@ do
 for j in "${array2[@]}"
 do
 
-rInvert =$(awk '$1==$i&&$2=$j{print $3}' Rinvert)
+if[ $j < $i ]{
+cat R$j$i > R$i$j
+}
 #construct Zm'RZm
-cmult -t -a M$i -R rInvert -b M$j -c M$i"RM"$j &
+cmult -t -a M$i -R R$i$j -b M$j -c M$i"RM"$j &
 
 #construct Zp'RZp
-cmult -t -a P$i -R rInvert -b P$j -c P$i"RP"$j &
+cmult -t -a P$i -R R$i$j -b P$j -c P$i"RP"$j &
 
 #construct Zm'RZp
-cmult -t -a M$i -R rInvert -b P$j -c M$i"RP"$j &
+cmult -t -a M$i -R R$i$j -b P$j -c M$i"RP"$j &
 
 #construct Zp'RZm
-cmult -t -a P$i -R rInvert -b M$j -c P$i"RM"$j &
+cmult -t -a P$i -R R$i$j -b M$j -c P$i"RM"$j &
 
 done
 done
@@ -159,30 +184,32 @@ for j in "${array2[@]}"
 do
 
 
-rInvert =$(awk '$1==$i&&$2=$j{print $3}' Rinvert)
+if[ $j < $i ]{
+cat R$j$i > R$i$j
+}
 
 #construct X'RZm
-cmult -t -a X$i -R rInvert -b M$j -c X$i"RM"$j &
+cmult -t -a X$i -R R$i$j -b M$j -c X$i"RM"$j &
 
 #construct Zm'RX
-cmult -t -a M$j -R rInvert -b X$i -c M$j"RX"$i &
+cmult -t -a M$j -R R$i$j -b X$i -c M$j"RX"$i &
 
 #construct Z'RZm
-cmult -t -a Z$i -R rInvert -b M$j -c Z$i"RM"$j &
+cmult -t -a Z$i -R R$i$j -b M$j -c Z$i"RM"$j &
 
 #construct Zm'RZ
-cmult -t -a M$j -R rInvert -b Z$i -c M$j"RZ"$i &
+cmult -t -a M$j -R R$i$j -b Z$i -c M$j"RZ"$i &
 
 #construct X'RZp
-cmult -t -a X$i -R rInvert -b P$j -c X$i"RP"$j &
+cmult -t -a X$i -R R$i$j -b P$j -c X$i"RP"$j &
 
 #construct Zp'RX
-cmult -t -a P$j -R rInvert -b X$i -c P$j"RX"$i &
+cmult -t -a P$j -R R$i$j -b X$i -c P$j"RX"$i &
 
 #construct Z'RZp
-cmult -t -a Z$i -R rInvert -b P$j -c Z$i"RP"$j &
+cmult -t -a Z$i -R R$i$j -b P$j -c Z$i"RP"$j &
 #construct Zp'RZ
-cmult -t -a P$j -R rInvert -b Z$i -c P$j"RZ"$i &
+cmult -t -a P$j -R R$i$j -b Z$i -c P$j"RZ"$i &
 
 done
 done
@@ -192,24 +219,6 @@ wait
 ###########################################
 ##construct 
 ###########################################
-
-g11=0.0505
-g12=-0.0033
-g13=-0.0031
-g14=0.0015
-g21=-0.0033
-g22=0.0044
-g23=-0.0015
-g24=-0.0005
-g31=-0.0031
-g32=-0.0015
-g33=0.0023
-g34=-0.0011
-g41=0.0015
-g42=-0.0005
-g43=-0.0011
-g44=0.0015
-
 
 array=(1 2 3 4 5 6 7 8 9 10 11 12)
 array2=(1 2 3 4 5 6 7 8 9 10 11 12) 
@@ -228,10 +237,6 @@ done
 
 wait
 
-m11=0.2009
-m12=-0.0069
-m21=-0.0069
-m22=0.0031
 
 array=(1 2 3)
 array2=(1 2 3) 
@@ -248,11 +253,6 @@ done
 done
 wait
 
-
-p11=0.4994
-p12=-0.0092
-p21=-0.0092
-p22=0.0019
 
 indnum=$(awk '$6!="\."{print $6}' phe.bw.fill.ped|sort -u|wc| awk '{print $1}')  
 
