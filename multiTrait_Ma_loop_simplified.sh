@@ -56,32 +56,32 @@ wait
 
 done
 
-###########################################
-###make matrix for trait with repeatability
-###########################################
-
-array=(mcw)
-
-for i in "${array[@]}"
-do
-
-#####make X and Z matrix
-awk '{print $2}' phe.$i".fill.ped" > y.$i &
-awk '{print $1}' phe.$i".fill.ped" > id.dat.$i &
-awk '{print $1}' stacked_ped > id.eff &
-awk '{print $4}' phe.$i".fill.ped" > cg1.dat.$i &
-awk '{print $4}' phe.$i".fill.ped" | sort -u > cg1.eff.$i &
-wait
-cgen_z -d cg1.dat.$i -e cg1.eff.$i -r y.$i -o X.$i
-cgen_z -d id.dat.$i -e id.eff -r y.$i -o Z.$i
-wait
+############################################
+####make matrix for trait with repeatability
+############################################
+#
+#array=(mcw)
+#
+#for i in "${array[@]}"
+#do
+#
+######make X and Z matrix
+#awk '{print $2}' phe.$i".fill.ped" > y.$i &
+#awk '{print $1}' phe.$i".fill.ped" > id.dat.$i &
+#awk '{print $1}' stacked_ped > id.eff &
+#awk '{print $4}' phe.$i".fill.ped" > cg1.dat.$i &
+#awk '{print $4}' phe.$i".fill.ped" | sort -u > cg1.eff.$i &
+#wait
+#cgen_z -d cg1.dat.$i -e cg1.eff.$i -r y.$i -o X.$i
+#cgen_z -d id.dat.$i -e id.eff -r y.$i -o Z.$i
+#wait
 
 
 ###########################################
 ## rename design matrix
 ###########################################
 n=1
-array=(bw ww yw fw carc_ema carc_imf carc_rib cwt ema imf rib mcw)
+array=(bw ww yw fw carc_ema carc_imf carc_rib cwt ema imf rib mcw ss)
 
 for i in "${array[@]}"
 do
@@ -96,7 +96,7 @@ wait
 done
 
 n=1
-array=(bw ww)
+array=(bw ww ss)
 
 for i in "${array[@]}"
 do
@@ -276,8 +276,8 @@ wait
 ##rhs 
 ###########################################
 
-array=(1 2 3 4)
-array2=(1 2 3 4)
+array=(1 2 3 4 5 6 7 8 9 10 11 12)
+array2=(1 2 3 4 5 6 7 8 9 10 11 12)
 
 for i in "${array[@]}"
 do
