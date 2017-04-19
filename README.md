@@ -2,5 +2,5 @@
 
 All Scripts
 
-###### change ownership
+###### change ownership for one directory
 sudo chown -R $(whoami) /usr/local/opt
