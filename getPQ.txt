@@ -1,0 +1,4 @@
+genofilter -i geno.temp -f 0.9 -o geno.filtered.temp -C centered
+
+#get sum2pq 
+awk '{a=(1-$1)/2; SUM+=2*a*(1-a)}END{print SUM}' centered > sum2pq

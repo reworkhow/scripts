@@ -1,0 +1,27 @@
+# 11/03/2015
+# Location(cuda4) /work/JH/SSBR_2t/2.Data/
+
+# store the field names of data file
+awk -F',' 'NR==1 {print $1,$5,$8,$9,$10,$11,$12,$13,$14,$15}' phens_eblup.csv > pheno.all
+
+# extract columns what we need ( ID, fixed effect, Observation ) and removing head and comma(",")
+awk -F',' 'NR>1 {print $1,$5,$8,$9,$10,$11,$12,$13,$14,$15}' phens_eblup.csv > pheno.all
+
+# replacing missing observation to dot(".")
+sed -i 's/-999/./g' pheno.all
+
+# inverting VCV using invert(Bolt) and checking 
+invert -i genvar -o genvar.inv
+cmult -a genvar -b genvar.inv -c I.out
+
+# phenotype for only training set 
+join genotyped_TRN.txt pheno.all > train.pheno.all
+
+# some changes 
+# 1. phens_eblup.csv <- only genotyped animals not all phenoytpes
+# 2. using trn_pheno.csv and tst_pheno.csv making a new phenoytpe data set
+awk -F"," 'NR>1 {print $1,$5,$8,$9,$10,$11,$12,$13,$14,$15}' trn_phens.csv > trn.pheno.all
+awk -F"," 'NR==1 {print $1,$5,$8,$9,$10,$11,$12,$13,$14,$15}' trn_phens.csv > trn.head.all
+awk -F"," 'NR>1 {print $1,$5,-999,-999,-999,-999,-999,-999,-999,-999}' tst_phens.csv > tst.pheno.all
+cat trn.pheno.all tst.pheno.all > trts.pheno.all
+

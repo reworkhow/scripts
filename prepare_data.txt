@@ -1,0 +1,44 @@
+
+
+
+#cat trn.geno and tst.geno
+awk 'NR>1{print $0}' tst_gens.txt> new/tst_gens.txt.noheader
+cat trn_gens.txt new/tst_gens.txt.noheader > new/geno.all
+
+#run julia: Aviagen70k to replace missing values with column means
+
+#recode
+GENOTYPE=
+sed 's/ 0/ -1/g;s/ 1/ 0/g;s/ 2/ 1/g' $GENOTYPE >geno.file.recoded
+
+##filter
+GENOTYPE=genotypes.txt
+cut -d " " -f 2- $GENOTYPE > geno.temp
+genofilter -i geno.temp -f 0.9 -o geno.filtered.temp -C centered
+awk '{print $1}' $GENOTYPE > geno.ID
+paste -d "" geno.ID geno.filtered.temp > $GENOTYPE.filtered
+rm geno.temp geno.file.recoded geno.filtered.temp geno.ID
+#
+#get sum2pq 
+awk '{a=(1-$1)/2; SUM+=2*a*(1-a)}END{print SUM}' centered > sum2pq
+
+
+
+#replace missing -999 in phenotypes files with ., and use training phenotypes as input phenotype file.
+
+
+
+
+
+
+#stacked_ped
+sed -i 's/,,/,.,/' ped.csv 
+sed -i 's/,$/,./' ped.csv
+sed -i 's/,/ /g' ped.csv
+awk 'NR>1{print $1,$2,$3}' ped.csv > ped.temp
+
+stack_ped -r ref.list ped.temp stacked_ped
+awk '{for(i=1;i<=2;i++) $(NF+1)=".";print}' nopedrec > nopedrec2 #add two extra column of . for nopedrec (generated from stack_ped)
+cat nopedrec2 ped.temp > ped.file          #paste vertically to get full pedigree
+stack_ped -r ref.list ped.file stacked_ped #run stack_ped agian to get stacked_ped
+rm nopedrec2 ped.temp ref.list ped.file    #remove redundant fiels

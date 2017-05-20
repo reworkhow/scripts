@@ -1,0 +1,27 @@
+
+
+
+#cat trn.geno and tst.geno
+awk 'NR>1{print $0}' tst_gens.txt> new/tst_gens.txt.noheader
+cat trn_gens.txt new/tst_gens.txt.noheader > new/geno.all
+
+#run julia: make_sparse_marker to get a subset of markers (about 5k)
+
+#recode
+GENOTYPE=
+sed -i ’s/ 0/ -1/g;s/ 1/ 0/g;s/ 2/ 1/g' $GENOTYPE
+
+##filter
+GENOTYPE=genotypes.txt
+cut -d " " -f 2- $GENOTYPE > geno.temp
+genofilter -i geno.temp -f 0.9 -o geno.filtered.temp -C centered
+awk '{print $1}' $GENOTYPE > geno.ID
+paste -d "" geno.ID geno.filtered.temp > $GENOTYPE.filtered
+rm geno.temp geno.file.recoded geno.filtered.temp geno.ID
+#
+#get sum2pq 
+awk '{a=(1-$1)/2; SUM+=2*a*(1-a)}END{print SUM}' centered > sum2pq
+
+
+
+#replace missing -999 in phenotypes files with ., and use training phenotypes as input phenotype file.

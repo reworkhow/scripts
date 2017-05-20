@@ -1,0 +1,37 @@
+BURNIN=1000
+SAMPLES=10000
+SEED=1
+SEED1=2
+SEED2=3
+SEED3=4
+SEED4=5
+
+#LOAD MATRICES TO SHARED MEMORY
+shmgr load W1tW1.phi11 W2tW2.phi22 W1tW2.phi12
+shmgr loadcmo M_2
+
+#RUN A SHORT CHAIN FOR BURNIN
+hmgibbsC -A ${SCRIPT}/mthmMap -o out -s ${SEED} -n ${BURNIN} -p ${PI} -V -d 4 -x restart
+
+#RUN FOUR LONG CHAINS AFTER BURNIN
+hmgibbsC -A ${SCRIPT}/mthmMap -o out -s ${SEED1} -n ${SAMPLES} -p ${PI} -V -d 1 -x restart &
+hmgibbsC -A ${SCRIPT}/mthmMap -o out -s ${SEED2} -n ${SAMPLES} -p ${PI} -V -d 1 -x restart &
+hmgibbsC -A ${SCRIPT}/mthmMap -o out -s ${SEED3} -n ${SAMPLES} -p ${PI} -V -d 1 -x restart &
+hmgibbsC -A ${SCRIPT}/mthmMap -o out -s ${SEED4} -n ${SAMPLES} -p ${PI} -V -d 1 -x restart & 
+wait
+
+
+
+# works but too slow
+hmgibbsCfast -A ${SCRIPT}/mthmMap -o out1 -s ${SEED1} -n ${SAMPLES} -p ${PI} -V -x restart &
+hmgibbsCfast -A ${SCRIPT}/mthmMap -o out2 -s ${SEED1} -n ${SAMPLES} -p ${PI} -V -x restart &
+hmgibbsCfast -A ${SCRIPT}/mthmMap -o out3 -s ${SEED1} -n ${SAMPLES} -p ${PI} -V -x restart &
+hmgibbsCfast -A ${SCRIPT}/mthmMap -o out4 -s ${SEED1} -n ${SAMPLES} -p ${PI} -V -x restart &
+wait
+
+#Time to take 10 samples: 1015.713705s,83Time per sample: 101.571371s
+#Time to take 10 samples: 1015.943885s,83Time per sample: 101.594389s
+#Time to take 10 samples: 1021.278114s,  Time per sample: 102.127811s
+#Time to take 10 samples: 1021.825353s,  Time per sample: 102.182535s
+
+
